@@ -10,15 +10,15 @@
 
 using namespace std::chrono_literals;
 
-// Тест 1: Базовая работоспособность и пустая структура
+// Проверка пустой структуры и работы LinearCounting
 void test_empty_and_basic() 
 {
-    std::cout << "[Test 1] Инициализация и базовая вставка... " << std::flush;
+    std::cout << "[Test 1] - " << std::flush;
     
     // 2^10 = 1024 бакетов, окно 1 секунда
     LFPM hll(10, 1s); 
 
-    // В пустой структуре оценка должна быть близка к 0
+    // В пустой структуре оценка должна быть 0
     const auto [card1, err1] {hll.cardinality()};
     assert(card1 == 0);
 
@@ -30,18 +30,19 @@ void test_empty_and_basic()
     hll.add(now, 300ULL);
 
     const auto [card2, err2] {hll.cardinality()};
-    // На таком маленьком количестве элементов Linear Counting нет,
-    // но оценка должна быть строго больше 0
-    assert(card2 > 0 && card2 <= 10); 
+    // На таком маленьком количестве элементов работает Linear Counting
+    // и ошибка должна быть меньше чем у Sliding HLL
+    assert(std::abs(static_cast<double>(card2) - 3.0) <= 3.0 * 3 * err2);
+    assert(static_cast<double>(err2) <= 1.04 / std::sqrt(1ULL << 10));
 
-    std::cout << "УСПЕШНО (Найдено элементов: " << card2 << ")" << std::endl;
+    std::cout << "УСПЕШНО!" << std::endl;
 }
 
-/*
-// Тест 2: Проверка скользящего окна (вытеснение по времени)
+
+// Проверка скользящего окна (вытеснение по времени)
 void test_sliding_window_expiration() 
 {
-    std::cout << "[Test 2] Проверка скользящего окна (тайм-аут)... " << std::flush;
+    std::cout << "[Test 2] - " << std::flush;
 
     // Окно всего 200 миллисекунд
     LFPM hll(10, 200ms);
@@ -53,22 +54,24 @@ void test_sliding_window_expiration()
     hll.add(t1, 2ULL);
     hll.add(t1, 3ULL);
     
-    assert(hll.cardinality() > 0);
+    const auto [card1, err1] {hll.cardinality()};
+    assert(std::abs(card1 - 3.0) <= 3.0 * 3 * err1);
 
     // Ждем 300 мс — это больше, чем наше окно в 200 мс
     std::this_thread::sleep_for(300ms);
 
     // Теперь элементы должны считаться устаревшими
-    size_t card_after_expire = hll.cardinality();
-    assert(card_after_expire == 0);
+    const auto [card2, err2] {hll.cardinality()};
+    assert(card2 == 0);
 
-    std::cout << "УСПЕШНО (После сдвига окна найдено: " << card_after_expire << ")" << std::endl;
+    std::cout << "УСПЕШНО!" << std::endl;
 }
 
-// Тест 3: Частичное устаревание (старые уходят, новые остаются)
+
+// Частичное устаревание (старые уходят, новые остаются)
 void test_partial_expiration() 
 {
-    std::cout << "[Test 3] Частичное вытеснение данных... " << std::flush;
+    std::cout << "[Test 3] - " << std::flush;
 
     LFPM hll(10, 400ms);
     
@@ -76,11 +79,11 @@ void test_partial_expiration()
     auto now1 = std::chrono::system_clock::now();
     hll.add(now1, 10ULL);
     hll.add(now1, 20ULL);
-    
-    size_t initial_card = hll.cardinality();
 
     // Спим 250 мс
     std::this_thread::sleep_for(250ms);
+
+    const auto [card1, err1] {hll.cardinality()};
 
     // Группа 2: добавляем новые элементы
     auto now2 = std::chrono::system_clock::now();
@@ -93,19 +96,20 @@ void test_partial_expiration()
     // с момента Группы 2 прошло 200мс (<400мс -> активны).
     std::this_thread::sleep_for(200ms);
 
-    size_t final_card = hll.cardinality();
+    const auto [card2, err2] = hll.cardinality();
     
     // Оценка должна уменьшиться, так как первая группа «выпала» из окна
-    assert(final_card < initial_card + 3);
-    assert(final_card > 0);
+    assert(std::abs(static_cast<double>(card1) - 2.0) <= 2.0 * 3 * err1);
+    assert(std::abs(static_cast<double>(card2) - 3.0) <= 3.0 * 3 * err2);
 
-    std::cout << "УСПЕШНО" << std::endl;
+    std::cout << "УСПЕШНО!" << std::endl;
 }
 
-// Тест 4: Точность на больших данных (Проверка математики HLL)
+
+// Точность на больших данных (Проверка математики HLL)
 void test_hll_accuracy() 
 {
-    std::cout << "[Test 4] Проверка точности на 5000 уникальных элементах... " << std::flush;
+    std::cout << "[Test 4] - " << std::flush;
 
     // 2^11 = 2048 бакетов. Ошибка ~ 1.04 / sqrt(2048) = 2.3%
     LFPM hll(11, 5s);
@@ -117,27 +121,27 @@ void test_hll_accuracy()
         hll.add(now, i);
     }
 
-    size_t estimated_card = hll.cardinality();
+    const auto [card1, err1] {hll.cardinality()};
     
     // Считаем относительную погрешность
-    double error = std::abs(static_cast<double>(estimated_card) - real_unique_count) / real_unique_count;
+    double error = std::abs(static_cast<double>(card1) - real_unique_count);
 
-    // Для HLL нормальное отклонение в пределах 3-5 стандартных ошибок (возьмем с запасом 15%, 
-    // так как у нас нет Linear Counting для коррекции крайних значений)
-    assert(error < 0.15);
-
-    std::cout << "УСПЕШНО (Оценка: " << estimated_card << ", Погрешность: " << (error * 100.0) << "%)" << std::endl;
+    assert(error < real_unique_count * 3 * err1);
+    std::cout << "УСПЕШНО!" << std::endl;
 }
-*/
-// ТОЧКА ВХОДА ДЛЯ ОБЪЕКТНОГО ФАЙЛА ТЕСТОВ
+
 int main() 
 {
     std::cout << "=== ЗАПУСК ТЕСТОВ SLIDING HYPERLOGLOG ===" << std::endl;
     
-    test_empty_and_basic();
-    //test_sliding_window_expiration();
-    //test_partial_expiration();
-    //test_hll_accuracy();
+    // Проверка на flaky тесты
+    for (size_t i {0}; i < 20; ++i) {
+        std::cout << "\n========== #" << i << " ==========\n";
+        test_empty_and_basic();
+        test_sliding_window_expiration();
+        test_partial_expiration();
+        test_hll_accuracy();
+    }
 
     std::cout << "=========================================" << std::endl;
     std::cout << "ВСЕ ТЕСТЫ ПРОЙДЕНЫ УСПЕШНО!" << std::endl;
