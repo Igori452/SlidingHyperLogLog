@@ -130,10 +130,73 @@ void test_hll_accuracy()
     std::cout << "УСПЕШНО!" << std::endl;
 }
 
+// Нагрузочный тест
+void test_sliding_stream_high_load() 
+{
+    std::cout << "[Test 5] - " << std::flush;
+
+    // 2^10 = 1024 бакета. Порог Linear Counting ~ 2.5 * m = 2560 элементов.
+    // Задаем окно 500 миллисекунд
+    const auto window_duration = 500ms;
+    LFPM hll(10, window_duration);
+
+    // Генерируем массивный «прошлый» поток элементов
+    auto t_past = std::chrono::system_clock::now();
+    const size_t past_bulk_size = 8000; // Гарантированно переводит структуру в режим HLL
+
+    for (size_t i = 0; i < past_bulk_size; ++i) 
+    {
+        // Используем смещение (например, i), чтобы элементы были уникальными
+        hll.add(t_past, i);
+    }
+
+    // Проверяем, что сейчас мы находимся в режиме HLL и кардинальность близка к 8000
+    const auto [card_past, err_past] = hll.cardinality();
+    assert(card_past > 3000); // Структура явно вышла из режима Linear Counting
+    assert(std::abs(static_cast<double>(card_past) - past_bulk_size) <= past_bulk_size * 3 * err_past);
+
+    // Симулируем временной сдвиг и параллельно льем «новый» поток
+    // Спим 350 мс: старый поток ВСЕ ЕЩЕ валиден (350мс < 500мс)
+    std::this_thread::sleep_for(350ms);
+    
+    auto t_present = std::chrono::system_clock::now();
+    const size_t present_bulk_size = 6000;
+
+    for (size_t i = 0; i < present_bulk_size; ++i) 
+    {
+        // Используем другую область значений (i + 100000), чтобы не было пересечений со старыми
+        hll.add(t_present, i + 100000ULL); 
+    }
+
+    // В этой точке времени ОБЕ группы внутри окна (350мс < 500мс и 0мс < 500мс)
+    // Общая кардинальность должна быть суммой: 8000 + 6000 = 14000
+    const size_t total_combined = past_bulk_size + present_bulk_size;
+    const auto [card_combined, err_combined] = hll.cardinality();
+    assert(std::abs(static_cast<double>(card_combined) - total_combined) <= total_combined * 3 * err_combined);
+
+    // Дожидаемся полного вытеснения первой группы
+    // Спим еще 200 мс. 
+    // Итог: для t_past прошло 350 + 200 = 550мс (> 500мс -> ОН УСТАРЕЛ)
+    // для t_present прошло всего 200мс (< 500мс -> ОН ЖИВ)
+    std::this_thread::sleep_for(200ms);
+
+    // Теперь в окне должны остаться ТОЛЬКО 6000 элементов из второго потока
+    const auto [card_final, err_final] = hll.cardinality();
+    
+    // Проверяем, что старые 8000 полностью «вымылись» из бакетов sliding HLL, 
+    // а оставшиеся 6000 удерживают точность HLL
+    assert(std::abs(static_cast<double>(card_final) - present_bulk_size) <= present_bulk_size * 3 * err_final);
+
+    std::cout << "УСПЕШНО!" << std::endl;
+}
+
+
 int main() 
 {
     std::cout << "=== ЗАПУСК ТЕСТОВ SLIDING HYPERLOGLOG ===" << std::endl;
     
+    test_sliding_stream_high_load();
+
     // Проверка на flaky тесты
     for (size_t i {0}; i < 20; ++i) {
         std::cout << "\n========== #" << i << " ==========\n";
@@ -142,7 +205,7 @@ int main()
         test_partial_expiration();
         test_hll_accuracy();
     }
-
+    
     std::cout << "=========================================" << std::endl;
     std::cout << "ВСЕ ТЕСТЫ ПРОЙДЕНЫ УСПЕШНО!" << std::endl;
     

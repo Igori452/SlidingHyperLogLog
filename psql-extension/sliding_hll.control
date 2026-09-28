@@ -1,0 +1,5 @@
+# sliding_hll extension
+comment = 'Sliding HyperLogLog for real-time unique counting'
+default_version = '1.0'
+module_pathname = '$libdir/sliding_hll'
+relocatable = true
