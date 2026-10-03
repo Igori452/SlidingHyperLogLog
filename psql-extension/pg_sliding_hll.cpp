@@ -6,6 +6,7 @@ extern "C" {
 #include <utils/builtins.h>
 #include <utils/memutils.h>
 #include <utils/timestamp.h> // Для работы с типом Interval
+#include <cmath>
 
 PG_MODULE_MAGIC;
 
@@ -43,16 +44,17 @@ Datum sliding_hll_accum(PG_FUNCTION_ARGS)
         MemoryContext oldcontext;
         MemoryContext aggcontext;
 
-        if (fcinfo->context && IsA(fcinfo->context, AggState)) {
-            aggcontext = AggCheckCallContext(fcinfo, &oldcontext);
-        } else {
-            aggcontext = TopMemoryContext;
-            oldcontext = MemoryContextSwitchTo(aggcontext);
-        }
+        // Узнаём контекст агрегата. Возвращает код, а в aggcontext кладёт указатель.
+        if (!AggCheckCallContext(fcinfo, &aggcontext))
+            elog(ERROR, "sliding_hll: aggregate function called in non-aggregate context");
 
-        // Динамически создаем объект, используя переданные пользователем параметры!
+        // Переключаемся в aggcontext, чтобы palloc/new шли именно туда.
+        oldcontext = MemoryContextSwitchTo(aggcontext);
+
+        // Создаём объект в контексте агрегата.
         state = new (palloc(sizeof(LFPM))) LFPM(log2m, window_chrono);
 
+        // Возвращаемся в исходный контекст.
         MemoryContextSwitchTo(oldcontext);
     } else {
         state = reinterpret_cast<LFPM *>(PG_GETARG_POINTER(0));

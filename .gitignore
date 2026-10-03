@@ -1,2 +1,5 @@
 .vscode/
 build/
+*.bc
+*.o
+*.so

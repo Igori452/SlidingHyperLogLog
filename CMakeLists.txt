@@ -5,7 +5,7 @@ project(SlidingHLLForPSQL)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_subdirectory(SlidingHyperLogLog-API)
+add_subdirectory(psql-extension/SlidingHyperLogLog-API)
 
 add_executable(${PROJECT_NAME} 
     tests/SlidingHyperLogLogTests.cpp)
