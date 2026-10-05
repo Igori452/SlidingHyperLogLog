@@ -1,5 +1,5 @@
 -- Функция накопления
-CREATE FUNCTION sliding_hll_accum(internal, bigint, interval, integer DEFAULT 11)
+CREATE FUNCTION sliding_hll_accum(internal, timestamptz, bigint, interval)
 RETURNS internal
 AS 'MODULE_PATHNAME', 'sliding_hll_accum'
 LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -9,8 +9,7 @@ RETURNS bigint
 AS 'MODULE_PATHNAME', 'sliding_hll_final'
 LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
--- Регистрируем агрегат; последнее значение выбрано оптимально
-CREATE AGGREGATE sliding_count_distinct(bigint, interval, integer DEFAULT 11) (
+CREATE AGGREGATE sliding_count_distinct(timestamptz, bigint, interval) (
     SFUNC = sliding_hll_accum,
     STYPE = internal,
     FINALFUNC = sliding_hll_final,

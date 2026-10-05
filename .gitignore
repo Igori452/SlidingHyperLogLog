@@ -3,3 +3,4 @@ build/
 *.bc
 *.o
 *.so
+tests/csv_generator/data.csv

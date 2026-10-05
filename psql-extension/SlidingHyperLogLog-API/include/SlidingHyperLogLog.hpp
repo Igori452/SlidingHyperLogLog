@@ -19,24 +19,6 @@ class Hashes
 
         static inline uint64_t quickBashHash(uint64_t input)
         {
-            /*
-            uint64_t w0 = input;
-            uint64_t w1 = 0x5555555555555555ULL; 
-            uint64_t w2 = 0xAAAAAAAAAAAAAAAAULL;
-
-            const int m1 = 8;
-            const int n1 = 19;
-            const int m2 = 29;
-            const int n2 = 37;
-
-            w1 ^= ((w0 >> m1) | (w0 << (64 - m1)));
-            w2 ^= ((w1 >> n1) | (w1 << (64 - n1)));
-            w0 ^= ((w2 >> m2) | (w2 << (64 - m2)));
-            w1 ^= ((w0 >> n2) | (w0 << (64 - n2)));
-
-            return w0 ^ w1 ^ w2;
-            */
-
             // Классический финальный миксер из MurmurHash3 (64-битный)
             uint64_t x = input;
             x ^= x >> 33;
