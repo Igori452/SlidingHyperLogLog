@@ -4,3 +4,6 @@ build/
 *.o
 *.so
 tests/csv_generator/data.csv
+tests/csv_generator/data_100.csv
+tests/csv_generator/data_200.csv
+tests/csv_generator/data_500.csv

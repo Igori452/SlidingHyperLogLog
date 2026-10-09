@@ -1,16 +1,21 @@
-import random, sys
+import random
 from datetime import datetime, timedelta, timezone
 
-n = int(sys.argv[1])                # количество строк
-users = int(sys.argv[2])            # количество уникальных юзеров
-hours = 6.0                         # окно в часах
-mu, sigma = hours / 2, hours / 6    # нормальное распределение внутри окна
+n = 100_000_000         # строк
+users = 100_000         # уникальных id
+days = 365 * 1          # за сколько дней
 
 now = datetime.now(timezone.utc).replace(tzinfo=None)
+start = now - timedelta(days=days)
+step = timedelta(seconds=days * 86400 / n)
+
 with open("data.csv", "w") as f:
+    t = start
     for _ in range(n):
         uid = random.randint(1, users)
-        # обрезаем хвосты до [0, hours]
-        sec = min(max(random.gauss(mu, sigma), 0), hours) * 3600
-        ts = now - timedelta(seconds=sec)
-        f.write(f"{uid},{ts:%Y-%m-%d %H:%M:%S}\n")
+        f.write(f"{uid},{t:%Y-%m-%d %H:%M:%S}\n")
+        t += step
+
+# data_100 - 100млн всего, 100к уникальных, 1 год
+# data_200 - 200млн всего, 60млн уникальных, 3 года
+# data_500 - 500млн всего, 450млн уникальных, 5 лет

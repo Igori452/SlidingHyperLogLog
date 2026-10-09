@@ -6,7 +6,7 @@ CONTAINER_NAME=pg-test-container
 IMAGE_NAME=pg-test
 PORT=5432
 
-.PHONY: build run connect sql-data stop clean restart
+.PHONY: build run connect sql-data stop clean restart rebuild
 
 # Сборка чистого образа без секретов
 build:
@@ -52,3 +52,6 @@ clean: stop
 
 # Перезапуск (очистка и новый запуск)
 restart: clean run
+
+# Пересборка контейнера (очистка, новая сборка и запуск)
+rebuild: clean build run

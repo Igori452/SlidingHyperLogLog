@@ -17,11 +17,9 @@ size_t LFPM::hashPower(uint64_t hash) const
     return std::countl_zero(remainingHash) + 1;
 }
 
-std::tuple<double, double> LFPM::cardinality() const 
+std::tuple<double, double> LFPM::cardinality(std::chrono::system_clock::time_point refTime) const 
 {
-    const auto nowTime {std::chrono::system_clock::now()};
-    
-    std::chrono::system_clock::time_point tp {nowTime - slidingWindow};
+    std::chrono::system_clock::time_point tp {refTime - slidingWindow};
         
     double sm {0.0};
     size_t emptyBuckets {0};

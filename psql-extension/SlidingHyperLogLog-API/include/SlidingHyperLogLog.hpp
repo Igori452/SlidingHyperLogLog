@@ -50,7 +50,7 @@ class LFPM
         template <typename T>
         void add(std::chrono::system_clock::time_point timestamp, T val);
 
-        std::tuple<double, double> cardinality() const;
+        std::tuple<double, double> cardinality(std::chrono::system_clock::time_point refTime) const;
 };
 
 template <typename T>
