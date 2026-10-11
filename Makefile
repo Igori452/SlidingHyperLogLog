@@ -26,25 +26,37 @@ run:
 connect:
 	docker exec -it $(CONTAINER_NAME) psql -U $(DB_USER) -d $(DB_NAME)
 
-# Выполнить скрипт наполнения данными
-sql-data:
-	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/data.sql
-
 # Выполнить скрипт наполнения большим количеством данных
-sql-bigdata:
-	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/big_data.sql
+sql-data-100:
+	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/big_data_100.sql
+sql-data-200:
+	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/big_data_200.sql
+sql-data-500:
+	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/big_data_500.sql
 
 # Выполнить скрипт базового запроса
-sql-count:
-	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/count_query.sql
+sql-count-500:
+	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/count_query_500.sql
+sql-count-200:
+	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/count_query_200.sql
+sql-count-100:
+	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/count_query_100.sql
 
 # Выполнить скрипт hll запроса
-sql-hll:
-	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/HLL_query.sql
+sql-hll-500:
+	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/HLL_query_500.sql
+sql-hll-200:
+	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/HLL_query_200.sql
+sql-hll-100:
+	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/HLL_query_100.sql
 
 # Остановить контейнер
 stop:
 	docker stop $(CONTAINER_NAME) || true
+
+# Запустить контейнер
+start:
+	docker start $(CONTAINER_NAME)
 
 # Удалить контейнер
 clean: stop

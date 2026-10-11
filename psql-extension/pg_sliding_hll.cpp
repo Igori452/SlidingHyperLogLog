@@ -37,11 +37,23 @@ std::chrono::system_clock::time_point tstz_to_time_point(TimestampTz tstz)
 
 extern "C" Datum sliding_hll_accum(PG_FUNCTION_ARGS)
 {
-    // 0=state, 1=timestamp, 2=value, 3=interval, 4=refTime (игнорируем)
+    // Ожидаемые аргументы SQL-агрегата:
+    // 0 = state (внутреннее состояние)
+    // 1 = timestamp (время события из таблицы)
+    // 2 = value (значение для подсчета уникальных)
+    // 3 = interval (длина окна назад, например '1 year')
+    // 4 = startTimeWindow (точка "старта", от которой отматываем назад)
+
     if (PG_ARGISNULL(3)) {
-        ereport(ERROR, (errmsg("sliding_hll: window cannot be NULL")));
+        ereport(ERROR, (errmsg("sliding_hll: interval cannot be NULL")));
     }
+    if (PG_ARGISNULL(4)) {
+        ereport(ERROR, (errmsg("sliding_hll: startTimeWindow cannot be NULL")));
+    }
+
     Interval *interval = PG_GETARG_INTERVAL_P(3);
+    TimestampTz start_tstz = PG_GETARG_TIMESTAMPTZ(4);
+    auto start_time_chrono = tstz_to_time_point(start_tstz);
 
     int64 total_microseconds = interval->time
                              + interval->day  * USECS_PER_DAY
@@ -58,16 +70,24 @@ extern "C" Datum sliding_hll_accum(PG_FUNCTION_ARGS)
             elog(ERROR, "sliding_hll: not in aggregate context");
 
         MemoryContext oldcontext = MemoryContextSwitchTo(aggcontext);
-        state = new (palloc(sizeof(LFPM))) LFPM(11, window_chrono);
+        
+        // Инициализируем СТАТИЧНЫЙ LFPM жесткими границами.
+        // Теперь он знает, что всё, что не попадает в [start - window, start], нужно игнорировать.
+        state = new (palloc(sizeof(LFPM))) LFPM(12, start_time_chrono, window_chrono);
+        
         MemoryContextSwitchTo(oldcontext);
     } else {
         state = reinterpret_cast<LFPM *>(PG_GETARG_POINTER(0));
     }
 
+    // Добавляем элемент потока
     if (!PG_ARGISNULL(1) && !PG_ARGISNULL(2)) {
         TimestampTz tstz = PG_GETARG_TIMESTAMPTZ(1);
         int64       item = PG_GETARG_INT64(2);
         auto event_time = tstz_to_time_point(tstz);
+        
+        // Метод add сравнивает event_time с [startTimeWindow - slidingWindow, startTimeWindow]
+        // Если попадает — ищет максимум для бакета. Если нет — просто делает return.
         state->add(event_time, static_cast<uint64_t>(item));
     }
 
@@ -81,14 +101,10 @@ extern "C" Datum sliding_hll_final(PG_FUNCTION_ARGS)
 
     LFPM *state = reinterpret_cast<LFPM *>(PG_GETARG_POINTER(0));
 
-    // 0=state, 1=timestamp, 2=value, 3=interval, 4=refTime
-    std::chrono::system_clock::time_point refTime;
-    if (PG_NARGS() >= 5 && !PG_ARGISNULL(4)) {
-        refTime = tstz_to_time_point(PG_GETARG_TIMESTAMPTZ(4));
-    } else {
-        refTime = std::chrono::system_clock::now();
-    }
-
-    const auto [cardinality, err] = state->cardinality(refTime);
+    // Вызываем чистый метод cardinality() без аргументов времени.
+    // Нам не нужен refTime, потому что в бакетах СУПЕР-ГАРАНТИРОВАННО 
+    // лежат только валидные максимумы за нужный исторический отрезок.
+    const auto [cardinality, err] = state->cardinality();
+    
     PG_RETURN_INT64(static_cast<int64>(std::round(cardinality)));
 }

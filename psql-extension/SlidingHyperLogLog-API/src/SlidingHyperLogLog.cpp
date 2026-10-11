@@ -2,12 +2,15 @@
 #include <bit>
 #include <cmath>
 
-LFPM::LFPM(const size_t mDegree_, std::chrono::nanoseconds slidingWindow_)
+LFPM::LFPM( const size_t mDegree_, 
+            std::chrono::system_clock::time_point startTimeWindow_, 
+            std::chrono::nanoseconds slidingWindow_)
 : mDegree(mDegree_), 
   mBuckets(1ULL << mDegree_),
   alpha(mBuckets == 16 ? 0.673 : (mBuckets == 32 ? 0.697 : (mBuckets == 64 ? 0.709 : 0.7213 / (1.0 + 1.079 / mBuckets)))),
+  startTimeWindow(startTimeWindow_),
   slidingWindow(slidingWindow_),
-  lfpm(1ULL << mDegree_)
+  lfpm(1ULL << mDegree_, NodeLFPM{ std::chrono::system_clock::time_point{}, 0 })
 {}
 
 size_t LFPM::hashPower(uint64_t hash) const 
@@ -17,31 +20,20 @@ size_t LFPM::hashPower(uint64_t hash) const
     return std::countl_zero(remainingHash) + 1;
 }
 
-std::tuple<double, double> LFPM::cardinality(std::chrono::system_clock::time_point refTime) const 
+std::tuple<double, double> LFPM::cardinality() const 
 {
-    std::chrono::system_clock::time_point tp {refTime - slidingWindow};
-        
     double sm {0.0};
     size_t emptyBuckets {0};
 
-    for (const auto& reg : lfpm) 
+    // Собираем готовые максимумы из бакетов
+    for (const auto& node : lfpm) 
     {
-        size_t maxVal {0};
-        bool emptyBucket {false};
-
-        for (auto it {std::rbegin(reg)}; it != std::rend(reg); ++it) 
+        if (node.value == 0)
         {
-            if (it->timestamp < tp)
-            {
-                break;
-            }
-         
-            maxVal = std::max(maxVal, it->value);
-            emptyBucket = true;
+            emptyBuckets++;
         }
-
-        emptyBuckets += !emptyBucket;
-        sm += 1.0 / (1ULL << maxVal);
+         
+        sm += 1.0 / (1ULL << node.value);
     }
 
     double rawEstimate {alpha * mBuckets * mBuckets * (1.0 / sm)};
@@ -55,7 +47,7 @@ std::tuple<double, double> LFPM::cardinality(std::chrono::system_clock::time_poi
         if (rawEstimate > 0.0) 
         {
             double t = rawEstimate / mBuckets;
-            error = std::sqrt(std::exp(t) - t - 1.0) / (t *  std::sqrt(static_cast<double>(mBuckets)));
+            error = std::sqrt(std::exp(t) - t - 1.0) / (t * std::sqrt(static_cast<double>(mBuckets)));
         }
         else 
         {
@@ -63,5 +55,5 @@ std::tuple<double, double> LFPM::cardinality(std::chrono::system_clock::time_poi
         }
     }
 
-    return {static_cast<size_t>(rawEstimate), error};
+    return {rawEstimate, error};
 }

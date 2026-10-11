@@ -23,7 +23,6 @@ FROM user_logs WHERE viewed_at >= NOW() - INTERVAL '1460 days';
 SELECT COUNT(DISTINCT user_id) AS unique_users_1460d
 FROM user_logs WHERE viewed_at >= NOW() - INTERVAL '1460 days';
 
-
 -- 2 года, закончившихся 1 год назад
 EXPLAIN (ANALYZE, BUFFERS, TIMING)
 SELECT COUNT(DISTINCT user_id) AS unique_users_730d_ending_1y_ago

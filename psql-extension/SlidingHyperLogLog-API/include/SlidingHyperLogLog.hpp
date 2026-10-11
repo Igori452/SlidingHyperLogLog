@@ -37,33 +37,37 @@ class LFPM
         const size_t mBuckets;
         const double alpha;
         
-        const std::chrono::nanoseconds slidingWindow; 
+        const std::chrono::system_clock::time_point startTimeWindow;  
+        const std::chrono::nanoseconds slidingWindow;
 
-        std::vector<std::vector<NodeLFPM>> lfpm;
+        std::vector<NodeLFPM> lfpm;
 
         size_t hashPower(uint64_t hash) const;
-        double calculateAlpha() const;
     public:
         LFPM() = delete;
-        LFPM(const size_t mDegree_, std::chrono::nanoseconds slidingWindow_);
+        LFPM(const size_t mDegree_, std::chrono::system_clock::time_point startTimeWindow_, std::chrono::nanoseconds slidingWindow_);
         
         template <typename T>
         void add(std::chrono::system_clock::time_point timestamp, T val);
 
-        std::tuple<double, double> cardinality(std::chrono::system_clock::time_point refTime) const;
+        std::tuple<double, double> cardinality() const;
 };
 
 template <typename T>
 void LFPM::add(std::chrono::system_clock::time_point timestamp, T val) 
 {
+    if (timestamp < startTimeWindow - slidingWindow || timestamp > startTimeWindow) 
+    {
+        return;
+    }
+
     uint64_t hashVal {Hashes::quickBashHash(static_cast<uint64_t>(val))};
     uint64_t hashKey {hashVal >> (Hashes::hashDegree - mDegree)};
 
-    NodeLFPM node {timestamp, hashPower(hashVal)};
+    size_t current_power = hashPower(hashVal);
 
-    std::erase_if(lfpm[hashKey], [&](const NodeLFPM& item) {
-        return (item.timestamp + slidingWindow < node.timestamp) || (item.value < node.value);
-    });
-
-    lfpm[hashKey].push_back(node);
+    if (current_power > lfpm[hashKey].value) 
+    {
+        lfpm[hashKey] = NodeLFPM{ timestamp, current_power };
+    }
 }
