@@ -11,7 +11,8 @@ CREATE TABLE user_logs (
 
 COPY user_logs(user_id, viewed_at) FROM '/tmp/data_200.csv' WITH (FORMAT csv);
 
-CREATE INDEX ON user_logs(viewed_at);
+CREATE INDEX user_logs_viewed_at_idx ON user_logs(viewed_at);
 ANALYZE user_logs;
 
 SELECT pg_size_pretty(pg_relation_size('user_logs'));
+SELECT pg_size_pretty(pg_relation_size('user_logs_viewed_at_idx'));

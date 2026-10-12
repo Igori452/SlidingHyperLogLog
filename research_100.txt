@@ -12,6 +12,11 @@ ANALYZE
  4223 MB
 (1 row)
 
+ pg_size_pretty 
+----------------
+ 1481 MB
+(1 row)
+
 igorjob@Proggramer:~/programming/c++/SlidingHyperLogLog$ make sql-hll-100
 docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/HLL_query_100.sql
 Timing is on.
