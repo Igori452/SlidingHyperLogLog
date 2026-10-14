@@ -1,19 +1,20 @@
 igorjob@Proggramer:~/programming/c++/SlidingHyperLogLog$ make sql-data-500
 docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/big_data_500.sql
 DROP EXTENSION
-NOTICE:  extension "sliding_hll" does not exist, skipping
 CREATE EXTENSION
-NOTICE:  table "user_logs" does not exist, skipping
 DROP TABLE
 CREATE TABLE
-
 COPY 500000000
-
 CREATE INDEX
 ANALYZE
  pg_size_pretty 
 ----------------
  21 GB
+(1 row)
+
+ pg_size_pretty 
+----------------
+ 7403 MB
 (1 row)
 
 igorjob@Proggramer:~/programming/c++/SlidingHyperLogLog$ make sql-hll-500
