@@ -1,0 +1,637 @@
+igorjob@Proggramer:~/programming/c++/SlidingHyperLogLog$ make sql-data-100
+docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/big_data_100.sql
+DROP EXTENSION
+CREATE EXTENSION
+DROP TABLE
+CREATE TABLE
+COPY 100000000
+CREATE INDEX
+ANALYZE
+ pg_size_pretty 
+----------------
+ 4223 MB
+(1 row)
+
+ pg_size_pretty 
+----------------
+ 1481 MB
+(1 row)
+
+igorjob@Proggramer:~/programming/c++/SlidingHyperLogLog$ make sql-hll-100
+docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/HLL_query_100.sql
+Timing is on.
+                                                            QUERY PLAN                                                             
+-----------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=2540576.00..2540576.01 rows=1 width=8) (actual time=11531.556..11531.557 rows=1 loops=1)
+   Buffers: shared hit=1073 read=539503
+   ->  Seq Scan on user_logs  (cost=0.00..1540576.00 rows=100000000 width=12) (actual time=0.053..4940.180 rows=100000000 loops=1)
+         Buffers: shared hit=1073 read=539503
+ Planning:
+   Buffers: shared hit=77 read=3 dirtied=1
+ Planning Time: 0.801 ms
+ JIT:
+   Functions: 3
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.233 ms, Inlining 54.967 ms, Optimization 11.419 ms, Emission 10.612 ms, Total 77.233 ms
+ Execution Time: 11552.607 ms
+(12 rows)
+
+Time: 11557.385 ms (00:11.557)
+ unique_users_30d 
+------------------
+           100110
+(1 row)
+
+Time: 6585.183 ms (00:06.585)
+                                                            QUERY PLAN                                                             
+-----------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=2540576.00..2540576.01 rows=1 width=8) (actual time=11014.762..11014.763 rows=1 loops=1)
+   Buffers: shared hit=1137 read=539439
+   ->  Seq Scan on user_logs  (cost=0.00..1540576.00 rows=100000000 width=12) (actual time=0.035..4695.307 rows=100000000 loops=1)
+         Buffers: shared hit=1137 read=539439
+ Planning Time: 0.055 ms
+ JIT:
+   Functions: 3
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.207 ms, Inlining 2.721 ms, Optimization 7.859 ms, Emission 5.960 ms, Total 16.747 ms
+ Execution Time: 11015.304 ms
+(10 rows)
+
+Time: 11015.703 ms (00:11.016)
+ unique_users_90d 
+------------------
+           100110
+(1 row)
+
+Time: 6719.323 ms (00:06.719)
+                                                            QUERY PLAN                                                             
+-----------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=2540576.00..2540576.01 rows=1 width=8) (actual time=11204.848..11204.849 rows=1 loops=1)
+   Buffers: shared hit=1201 read=539375
+   ->  Seq Scan on user_logs  (cost=0.00..1540576.00 rows=100000000 width=12) (actual time=0.035..4749.904 rows=100000000 loops=1)
+         Buffers: shared hit=1201 read=539375
+ Planning Time: 0.045 ms
+ JIT:
+   Functions: 3
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.218 ms, Inlining 3.616 ms, Optimization 7.944 ms, Emission 6.009 ms, Total 17.788 ms
+ Execution Time: 11205.220 ms
+(10 rows)
+
+Time: 11205.547 ms (00:11.206)
+ unique_users_200d 
+-------------------
+            100110
+(1 row)
+
+Time: 6823.582 ms (00:06.824)
+                                                            QUERY PLAN                                                             
+-----------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=2790576.00..2790576.01 rows=1 width=8) (actual time=16588.713..16588.715 rows=1 loops=1)
+   Buffers: shared hit=1265 read=539311
+   ->  Seq Scan on user_logs  (cost=0.00..1540576.00 rows=100000000 width=12) (actual time=0.021..4609.302 rows=100000000 loops=1)
+         Buffers: shared hit=1265 read=539311
+ Planning Time: 0.093 ms
+ JIT:
+   Functions: 3
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.352 ms, Inlining 3.192 ms, Optimization 8.063 ms, Emission 6.431 ms, Total 18.038 ms
+ Execution Time: 16589.431 ms
+(10 rows)
+
+Time: 16603.200 ms (00:16.603)
+ unique_users_180d_ending_180d_ago 
+-----------------------------------
+                            100110
+(1 row)
+
+Time: 12773.441 ms (00:12.773)
+igorjob@Proggramer:~/programming/c++/SlidingHyperLogLog$ make sql-count-100
+docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/count_query_100.sql
+Timing is on.
+                                                                             QUERY PLAN                                                                              
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=1399433.85..1399433.86 rows=1 width=8) (actual time=3009.766..3009.768 rows=1 loops=1)
+   Buffers: shared hit=6 read=56051, temp read=22565 written=22608
+   ->  Sort  (cost=1359988.25..1379711.05 rows=7889119 width=4) (actual time=2376.217..2748.418 rows=7684039 loops=1)
+         Sort Key: user_id
+         Sort Method: external merge  Disk: 90288kB
+         Buffers: shared hit=6 read=56051, temp read=22565 written=22608
+         ->  Index Scan using user_logs_viewed_at_idx on user_logs  (cost=0.57..240514.16 rows=7889119 width=4) (actual time=110.169..1018.414 rows=7684039 loops=1)
+               Index Cond: (viewed_at >= (now() - '30 days'::interval))
+               Buffers: shared hit=3 read=56051
+ Planning:
+   Buffers: shared hit=104 read=3
+ Planning Time: 0.870 ms
+ JIT:
+   Functions: 8
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.371 ms, Inlining 65.331 ms, Optimization 26.739 ms, Emission 18.006 ms, Total 110.447 ms
+ Execution Time: 3042.968 ms
+(17 rows)
+
+Time: 3058.277 ms (00:03.058)
+ unique_users_30d 
+------------------
+           100000
+(1 row)
+
+Time: 1973.952 ms (00:01.974)
+                                                                              QUERY PLAN                                                                              
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=4476684.06..4476684.07 rows=1 width=8) (actual time=8155.818..8155.819 rows=1 loops=1)
+   Buffers: shared read=175948, temp read=70824 written=70962
+   ->  Sort  (cost=4355989.07..4416336.56 rows=24138998 width=4) (actual time=6167.627..7343.187 rows=24122380 loops=1)
+         Sort Key: user_id
+         Sort Method: external merge  Disk: 283328kB
+         Buffers: shared read=175948, temp read=70824 written=70962
+         ->  Index Scan using user_logs_viewed_at_idx on user_logs  (cost=0.57..735910.04 rows=24138998 width=4) (actual time=37.141..2362.011 rows=24122380 loops=1)
+               Index Cond: (viewed_at >= (now() - '90 days'::interval))
+               Buffers: shared read=175948
+ Planning Time: 0.164 ms
+ JIT:
+   Functions: 8
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.674 ms, Inlining 7.524 ms, Optimization 18.743 ms, Emission 10.840 ms, Total 37.782 ms
+ Execution Time: 8189.742 ms
+(15 rows)
+
+Time: 8190.277 ms (00:08.190)
+ unique_users_90d 
+------------------
+           100000
+(1 row)
+
+Time: 6102.932 ms (00:06.103)
+                                                                              QUERY PLAN                                                                               
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=11177202.11..11177202.12 rows=1 width=8) (actual time=20148.236..20148.237 rows=1 loops=1)
+   Buffers: shared read=395762, temp read=238931 written=239241
+   ->  Sort  (cost=10904592.31..11040897.21 rows=54521960 width=4) (actual time=15723.374..18256.975 rows=54259318 loops=1)
+         Sort Key: user_id
+         Sort Method: external merge  Disk: 637232kB
+         Buffers: shared read=395762, temp read=238931 written=239241
+         ->  Index Scan using user_logs_viewed_at_idx on user_logs  (cost=0.57..1662170.87 rows=54521960 width=4) (actual time=36.751..5217.100 rows=54259318 loops=1)
+               Index Cond: (viewed_at >= (now() - '200 days'::interval))
+               Buffers: shared read=395762
+ Planning Time: 0.080 ms
+ JIT:
+   Functions: 8
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.340 ms, Inlining 8.130 ms, Optimization 17.847 ms, Emission 10.739 ms, Total 37.055 ms
+ Execution Time: 20224.271 ms
+(15 rows)
+
+Time: 20224.660 ms (00:20.225)
+ unique_users_200d 
+-------------------
+            100000
+(1 row)
+
+Time: 15811.756 ms (00:15.812)
+                                                                              QUERY PLAN                                                                               
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=10584056.72..10584056.73 rows=1 width=8) (actual time=20397.964..20397.965 rows=1 loops=1)
+   Buffers: shared hit=4 read=373590, temp read=225551 written=225844
+   ->  Sort  (cost=10328451.40..10456254.06 rows=51121065 width=4) (actual time=16141.773..18555.743 rows=51220248 loops=1)
+         Sort Key: user_id
+         Sort Method: external merge  Disk: 601560kB
+         Buffers: shared hit=4 read=373590, temp read=225551 written=225844
+         ->  Index Scan using user_logs_viewed_at_idx on user_logs  (cost=0.58..1686293.88 rows=51121065 width=4) (actual time=38.171..5776.657 rows=51220248 loops=1)
+               Index Cond: ((viewed_at >= (now() - '370 days'::interval)) AND (viewed_at < (now() - '180 days'::interval)))
+               Buffers: shared hit=4 read=373590
+ Planning:
+   Buffers: shared read=8
+ Planning Time: 11.988 ms
+ JIT:
+   Functions: 9
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.494 ms, Inlining 7.042 ms, Optimization 18.782 ms, Emission 12.326 ms, Total 38.644 ms
+ Execution Time: 20480.550 ms
+(17 rows)
+
+Time: 20493.133 ms (00:20.493)
+ unique_users_180d_ending_180d_ago 
+-----------------------------------
+                            100000
+(1 row)
+
+Time: 16158.603 ms (00:16.159)
+   count   |         min         |         max         
+-----------+---------------------+---------------------
+ 100000000 | 2025-10-09 13:47:22 | 2026-10-09 13:47:22
+(1 row)
+
+Time: 1865.473 ms (00:01.865)
+igorjob@Proggramer:~/programming/c++/SlidingHyperLogLog$ make sql-count-100
+docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/count_query_100.sql
+Timing is on.
+                                                                             QUERY PLAN                                                                              
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=981217.13..981217.14 rows=1 width=8) (actual time=3109.588..3109.589 rows=1 loops=1)
+   Buffers: shared hit=6 read=40298, temp read=16231 written=16262
+   ->  Sort  (cost=953170.88..967194.01 rows=5609250 width=4) (actual time=2648.740..2921.988 rows=5524241 loops=1)
+         Sort Key: user_id
+         Sort Method: external merge  Disk: 64976kB
+         Buffers: shared hit=6 read=40298, temp read=16231 written=16262
+         ->  Index Scan using user_logs_viewed_at_idx on user_logs  (cost=0.57..171007.45 rows=5609250 width=4) (actual time=209.976..1322.996 rows=5524241 loops=1)
+               Index Cond: (viewed_at >= (now() - '30 days'::interval))
+               Buffers: shared hit=3 read=40298
+ Planning:
+   Buffers: shared hit=100 read=7
+ Planning Time: 1.915 ms
+ JIT:
+   Functions: 8
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 1.004 ms, Inlining 94.300 ms, Optimization 63.695 ms, Emission 51.663 ms, Total 210.662 ms
+ Execution Time: 3285.166 ms
+(17 rows)
+
+Time: 3293.801 ms (00:03.294)
+ unique_users_30d 
+------------------
+           100000
+(1 row)
+
+Time: 1411.539 ms (00:01.412)
+                                                                              QUERY PLAN                                                                              
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=4119018.02..4119018.03 rows=1 width=8) (actual time=8758.614..8758.616 rows=1 loops=1)
+   Buffers: shared read=160196, temp read=64486 written=64611
+   ->  Sort  (cost=4007618.57..4063318.30 rows=22279891 width=4) (actual time=6951.350..8029.148 rows=21962581 loops=1)
+         Sort Key: user_id
+         Sort Method: external merge  Disk: 257992kB
+         Buffers: shared read=160196, temp read=64486 written=64611
+         ->  Index Scan using user_logs_viewed_at_idx on user_logs  (cost=0.57..679225.67 rows=22279891 width=4) (actual time=57.433..3452.092 rows=21962581 loops=1)
+               Index Cond: (viewed_at >= (now() - '90 days'::interval))
+               Buffers: shared read=160196
+ Planning Time: 0.082 ms
+ JIT:
+   Functions: 8
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.331 ms, Inlining 6.327 ms, Optimization 17.210 ms, Emission 10.705 ms, Total 34.574 ms
+ Execution Time: 8788.049 ms
+(15 rows)
+
+Time: 8788.418 ms (00:08.788)
+ unique_users_90d 
+------------------
+           100000
+(1 row)
+
+Time: 5720.576 ms (00:05.721)
+                                                                              QUERY PLAN                                                                               
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=10605810.65..10605810.66 rows=1 width=8) (actual time=20806.753..20806.754 rows=1 loops=1)
+   Buffers: shared read=380008, temp read=229426 written=229724
+   ->  Sort  (cost=10346674.30..10476242.48 rows=51827269 width=4) (actual time=16416.165..18961.485 rows=52099523 loops=1)
+         Sort Key: user_id
+         Sort Method: external merge  Disk: 611912kB
+         Buffers: shared read=380008, temp read=229426 written=229724
+         ->  Index Scan using user_logs_viewed_at_idx on user_logs  (cost=0.57..1579997.78 rows=51827269 width=4) (actual time=34.618..5880.561 rows=52099523 loops=1)
+               Index Cond: (viewed_at >= (now() - '200 days'::interval))
+               Buffers: shared read=380008
+ Planning Time: 0.127 ms
+ JIT:
+   Functions: 8
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.326 ms, Inlining 6.396 ms, Optimization 17.271 ms, Emission 10.655 ms, Total 34.648 ms
+ Execution Time: 20886.822 ms
+(15 rows)
+
+Time: 20887.280 ms (00:20.887)
+ unique_users_200d 
+-------------------
+            100000
+(1 row)
+
+Time: 21436.004 ms (00:21.436)
+                                                                               QUERY PLAN                                                                               
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=10745055.08..10745055.09 rows=1 width=8) (actual time=25773.538..25773.539 rows=1 loops=1)
+   Buffers: shared read=379682, temp read=229228 written=229525
+   ->  Sort  (cost=10485692.85..10615373.96 rows=51872446 width=4) (actual time=21559.419..23981.766 rows=52054794 loops=1)
+         Sort Key: user_id
+         Sort Method: external merge  Disk: 611368kB
+         Buffers: shared read=379682, temp read=229228 written=229525
+         ->  Index Scan using user_logs_viewed_at_idx on user_logs  (cost=0.58..1711053.50 rows=51872446 width=4) (actual time=55.574..10772.647 rows=52054794 loops=1)
+               Index Cond: ((viewed_at >= (now() - '370 days'::interval)) AND (viewed_at < (now() - '180 days'::interval)))
+               Buffers: shared read=379682
+ Planning:
+   Buffers: shared read=3
+ Planning Time: 0.545 ms
+ JIT:
+   Functions: 9
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.547 ms, Inlining 8.372 ms, Optimization 28.970 ms, Emission 17.655 ms, Total 55.544 ms
+ Execution Time: 25851.556 ms
+(17 rows)
+
+Time: 25853.470 ms (00:25.853)
+ unique_users_180d_ending_180d_ago 
+-----------------------------------
+                            100000
+(1 row)
+
+Time: 16759.137 ms (00:16.759)
+   count   |         min         |         max         
+-----------+---------------------+---------------------
+ 100000000 | 2025-10-09 13:47:22 | 2026-10-09 13:47:22
+(1 row)
+
+Time: 2318.698 ms (00:02.319)
+igorjob@Proggramer:~/programming/c++/SlidingHyperLogLog$ make sql-count-100
+docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/count_query_100.sql
+Timing is on.
+                                                                             QUERY PLAN                                                                              
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=981053.51..981053.52 rows=1 width=8) (actual time=2693.667..2693.669 rows=1 loops=1)
+   Buffers: shared hit=6 read=40293 written=1, temp read=16230 written=16261
+   ->  Sort  (cost=953011.76..967032.63 rows=5608350 width=4) (actual time=2238.284..2510.294 rows=5523594 loops=1)
+         Sort Key: user_id
+         Sort Method: external merge  Disk: 64968kB
+         Buffers: shared hit=6 read=40293 written=1, temp read=16230 written=16261
+         ->  Index Scan using user_logs_viewed_at_idx on user_logs  (cost=0.57..170983.70 rows=5608350 width=4) (actual time=162.840..1054.627 rows=5523594 loops=1)
+               Index Cond: (viewed_at >= (now() - '30 days'::interval))
+               Buffers: shared hit=3 read=40293 written=1
+ Planning:
+   Buffers: shared hit=88 read=19
+ Planning Time: 2.429 ms
+ JIT:
+   Functions: 8
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.716 ms, Inlining 87.680 ms, Optimization 36.844 ms, Emission 25.519 ms, Total 150.760 ms
+ Execution Time: 2741.373 ms
+(17 rows)
+
+Time: 2750.113 ms (00:02.750)
+ unique_users_30d 
+------------------
+           100000
+(1 row)
+
+Time: 1569.732 ms (00:01.570)
+                                                                              QUERY PLAN                                                                              
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=4118770.79..4118770.80 rows=1 width=8) (actual time=7650.862..7650.864 rows=1 loops=1)
+   Buffers: shared read=160191, temp read=64484 written=64609
+   ->  Sort  (cost=4007377.97..4063074.38 rows=22278565 width=4) (actual time=5796.859..6911.050 rows=21961938 loops=1)
+         Sort Key: user_id
+         Sort Method: external merge  Disk: 257984kB
+         Buffers: shared read=160191, temp read=64484 written=64609
+         ->  Index Scan using user_logs_viewed_at_idx on user_logs  (cost=0.57..679191.46 rows=22278565 width=4) (actual time=55.517..2266.548 rows=21961938 loops=1)
+               Index Cond: (viewed_at >= (now() - '90 days'::interval))
+               Buffers: shared read=160191
+ Planning Time: 0.106 ms
+ JIT:
+   Functions: 8
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.434 ms, Inlining 10.906 ms, Optimization 21.272 ms, Emission 11.376 ms, Total 43.988 ms
+ Execution Time: 7699.678 ms
+(15 rows)
+
+Time: 7700.197 ms (00:07.700)
+ unique_users_90d 
+------------------
+           100000
+(1 row)
+
+Time: 5943.462 ms (00:05.943)
+                                                                              QUERY PLAN                                                                               
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=10605342.41..10605342.42 rows=1 width=8) (actual time=20590.464..20590.466 rows=1 loops=1)
+   Buffers: shared read=380004, temp read=229423 written=229721
+   ->  Sort  (cost=10346217.56..10475779.98 rows=51824971 width=4) (actual time=16365.450..18813.808 rows=52098879 loops=1)
+         Sort Key: user_id
+         Sort Method: external merge  Disk: 611904kB
+         Buffers: shared read=380004, temp read=229423 written=229721
+         ->  Index Scan using user_logs_viewed_at_idx on user_logs  (cost=0.57..1579946.56 rows=51824971 width=4) (actual time=47.925..5830.935 rows=52098879 loops=1)
+               Index Cond: (viewed_at >= (now() - '200 days'::interval))
+               Buffers: shared read=380004
+ Planning Time: 0.149 ms
+ JIT:
+   Functions: 8
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.452 ms, Inlining 6.881 ms, Optimization 17.723 ms, Emission 11.362 ms, Total 36.418 ms
+ Execution Time: 20693.998 ms
+(15 rows)
+
+Time: 20694.858 ms (00:20.695)
+ unique_users_200d 
+-------------------
+            100000
+(1 row)
+
+Time: 15945.042 ms (00:15.945)
+                                                                              QUERY PLAN                                                                               
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=10744722.36..10744722.37 rows=1 width=8) (actual time=21208.355..21208.357 rows=1 loops=1)
+   Buffers: shared read=379683, temp read=229228 written=229525
+   ->  Sort  (cost=10485368.54..10615045.45 rows=51870764 width=4) (actual time=16960.111..19427.046 rows=52054795 loops=1)
+         Sort Key: user_id
+         Sort Method: external merge  Disk: 611368kB
+         Buffers: shared read=379683, temp read=229228 written=229525
+         ->  Index Scan using user_logs_viewed_at_idx on user_logs  (cost=0.58..1711019.86 rows=51870764 width=4) (actual time=42.871..6584.175 rows=52054795 loops=1)
+               Index Cond: ((viewed_at >= (now() - '370 days'::interval)) AND (viewed_at < (now() - '180 days'::interval)))
+               Buffers: shared read=379683
+ Planning:
+   Buffers: shared read=3
+ Planning Time: 0.221 ms
+ JIT:
+   Functions: 9
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.732 ms, Inlining 9.267 ms, Optimization 19.977 ms, Emission 12.884 ms, Total 42.859 ms
+ Execution Time: 21304.478 ms
+(17 rows)
+
+Time: 21316.865 ms (00:21.317)
+ unique_users_180d_ending_180d_ago 
+-----------------------------------
+                            100000
+(1 row)
+
+Time: 16505.394 ms (00:16.505)
+   count   |         min         |         max         
+-----------+---------------------+---------------------
+ 100000000 | 2025-10-09 13:47:22 | 2026-10-09 13:47:22
+(1 row)
+
+Time: 2052.135 ms (00:02.052)
+igorjob@Proggramer:~/programming/c++/SlidingHyperLogLog$ make sql-hll-100
+docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/HLL_query_100.sql
+Timing is on.
+                                                            QUERY PLAN                                                             
+-----------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=2540576.00..2540576.01 rows=1 width=8) (actual time=12125.797..12125.798 rows=1 loops=1)
+   Buffers: shared hit=12103 read=528473
+   ->  Seq Scan on user_logs  (cost=0.00..1540576.00 rows=100000000 width=12) (actual time=0.064..5278.189 rows=100000000 loops=1)
+         Buffers: shared hit=12103 read=528473
+ Planning:
+   Buffers: shared hit=67 read=13
+ Planning Time: 2.510 ms
+ JIT:
+   Functions: 3
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.307 ms, Inlining 78.933 ms, Optimization 15.871 ms, Emission 14.897 ms, Total 110.007 ms
+ Execution Time: 12160.807 ms
+(12 rows)
+
+Time: 12167.249 ms (00:12.167)
+ unique_users_30d 
+------------------
+           100110
+(1 row)
+
+Time: 6853.932 ms (00:06.854)
+                                                            QUERY PLAN                                                             
+-----------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=2540576.00..2540576.01 rows=1 width=8) (actual time=11253.046..11253.047 rows=1 loops=1)
+   Buffers: shared hit=12167 read=528409
+   ->  Seq Scan on user_logs  (cost=0.00..1540576.00 rows=100000000 width=12) (actual time=0.026..4741.077 rows=100000000 loops=1)
+         Buffers: shared hit=12167 read=528409
+ Planning Time: 0.058 ms
+ JIT:
+   Functions: 3
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.216 ms, Inlining 2.739 ms, Optimization 7.868 ms, Emission 5.992 ms, Total 16.814 ms
+ Execution Time: 11253.337 ms
+(10 rows)
+
+Time: 11253.808 ms (00:11.254)
+ unique_users_90d 
+------------------
+           100110
+(1 row)
+
+Time: 6637.258 ms (00:06.637)
+                                                            QUERY PLAN                                                             
+-----------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=2540576.00..2540576.01 rows=1 width=8) (actual time=11005.274..11005.275 rows=1 loops=1)
+   Buffers: shared hit=12231 read=528345
+   ->  Seq Scan on user_logs  (cost=0.00..1540576.00 rows=100000000 width=12) (actual time=0.021..4552.080 rows=100000000 loops=1)
+         Buffers: shared hit=12231 read=528345
+ Planning Time: 0.053 ms
+ JIT:
+   Functions: 3
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.193 ms, Inlining 2.894 ms, Optimization 8.154 ms, Emission 6.399 ms, Total 17.640 ms
+ Execution Time: 11005.613 ms
+(10 rows)
+
+Time: 11005.991 ms (00:11.006)
+ unique_users_200d 
+-------------------
+            100110
+(1 row)
+
+Time: 6738.414 ms (00:06.738)
+                                                            QUERY PLAN                                                             
+-----------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=2790576.00..2790576.01 rows=1 width=8) (actual time=16633.036..16633.037 rows=1 loops=1)
+   Buffers: shared hit=12295 read=528281
+   ->  Seq Scan on user_logs  (cost=0.00..1540576.00 rows=100000000 width=12) (actual time=0.018..4616.072 rows=100000000 loops=1)
+         Buffers: shared hit=12295 read=528281
+ Planning Time: 0.066 ms
+ JIT:
+   Functions: 3
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.263 ms, Inlining 2.934 ms, Optimization 7.512 ms, Emission 5.845 ms, Total 16.553 ms
+ Execution Time: 16633.389 ms
+(10 rows)
+
+Time: 16646.222 ms (00:16.646)
+ unique_users_180d_ending_180d_ago 
+-----------------------------------
+                            100110
+(1 row)
+
+Time: 12676.743 ms (00:12.677)
+igorjob@Proggramer:~/programming/c++/SlidingHyperLogLog$ make sql-hll-100
+docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/HLL_query_100.sql
+Timing is on.
+                                                            QUERY PLAN                                                             
+-----------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=2540576.00..2540576.01 rows=1 width=8) (actual time=11118.202..11118.203 rows=1 loops=1)
+   Buffers: shared hit=12359 read=528217
+   ->  Seq Scan on user_logs  (cost=0.00..1540576.00 rows=100000000 width=12) (actual time=0.076..4680.726 rows=100000000 loops=1)
+         Buffers: shared hit=12359 read=528217
+ Planning:
+   Buffers: shared hit=80
+ Planning Time: 0.273 ms
+ JIT:
+   Functions: 3
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.175 ms, Inlining 38.972 ms, Optimization 7.996 ms, Emission 8.093 ms, Total 55.236 ms
+ Execution Time: 11144.246 ms
+(12 rows)
+
+Time: 11145.324 ms (00:11.145)
+ unique_users_30d 
+------------------
+           100110
+(1 row)
+
+Time: 6722.133 ms (00:06.722)
+                                                            QUERY PLAN                                                             
+-----------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=2540576.00..2540576.01 rows=1 width=8) (actual time=11163.844..11163.845 rows=1 loops=1)
+   Buffers: shared hit=12423 read=528153
+   ->  Seq Scan on user_logs  (cost=0.00..1540576.00 rows=100000000 width=12) (actual time=0.023..4729.331 rows=100000000 loops=1)
+         Buffers: shared hit=12423 read=528153
+ Planning Time: 0.046 ms
+ JIT:
+   Functions: 3
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.231 ms, Inlining 2.804 ms, Optimization 7.874 ms, Emission 6.068 ms, Total 16.976 ms
+ Execution Time: 11164.373 ms
+(10 rows)
+
+Time: 11164.791 ms (00:11.165)
+ unique_users_90d 
+------------------
+           100110
+(1 row)
+
+Time: 6785.738 ms (00:06.786)
+                                                            QUERY PLAN                                                             
+-----------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=2540576.00..2540576.01 rows=1 width=8) (actual time=11158.909..11158.910 rows=1 loops=1)
+   Buffers: shared hit=12487 read=528089
+   ->  Seq Scan on user_logs  (cost=0.00..1540576.00 rows=100000000 width=12) (actual time=0.023..4625.670 rows=100000000 loops=1)
+         Buffers: shared hit=12487 read=528089
+ Planning Time: 0.046 ms
+ JIT:
+   Functions: 3
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.220 ms, Inlining 2.849 ms, Optimization 7.978 ms, Emission 5.997 ms, Total 17.044 ms
+ Execution Time: 11159.187 ms
+(10 rows)
+
+Time: 11159.603 ms (00:11.160)
+ unique_users_200d 
+-------------------
+            100110
+(1 row)
+
+Time: 6865.466 ms (00:06.865)
+                                                            QUERY PLAN                                                             
+-----------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=2790576.00..2790576.01 rows=1 width=8) (actual time=16895.600..16895.601 rows=1 loops=1)
+   Buffers: shared hit=12551 read=528025
+   ->  Seq Scan on user_logs  (cost=0.00..1540576.00 rows=100000000 width=12) (actual time=0.024..4665.571 rows=100000000 loops=1)
+         Buffers: shared hit=12551 read=528025
+ Planning Time: 0.064 ms
+ JIT:
+   Functions: 3
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.237 ms, Inlining 3.275 ms, Optimization 8.081 ms, Emission 6.201 ms, Total 17.794 ms
+ Execution Time: 16895.910 ms
+(10 rows)
+
+Time: 16896.408 ms (00:16.896)
+ unique_users_180d_ending_180d_ago 
+-----------------------------------
+                            100110
+(1 row)
+
+Time: 12786.257 ms (00:12.786)
