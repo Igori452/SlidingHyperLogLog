@@ -1,0 +1,240 @@
+igorjob@Proggramer:~/programming/c++/SlidingHyperLogLog$ make sql-load-extern-hll 
+docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/load_extern_hll_query.sql
+SET
+                                                                    QUERY PLAN                                                                    
+--------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=6588634.55..6588634.56 rows=1 width=8) (actual time=34957.724..34957.728 rows=1 loops=1)
+   Buffers: shared read=1081120
+   ->  Seq Scan on user_logs  (cost=0.00..6581134.52 rows=1000003 width=4) (actual time=21154.942..31862.910 rows=62998241 loops=1)
+         Filter: (((viewed_at)::timestamp with time zone <= now()) AND ((viewed_at)::timestamp with time zone >= (now() - '365 days'::interval)))
+         Rows Removed by Filter: 137001759
+         Buffers: shared read=1081120
+ Planning:
+   Buffers: shared hit=58 read=14
+ Planning Time: 3.446 ms
+ JIT:
+   Functions: 5
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.519 ms, Inlining 79.376 ms, Optimization 27.216 ms, Emission 31.118 ms, Total 138.229 ms
+ Execution Time: 34993.312 ms
+(14 rows)
+
+igorjob@Proggramer:~/programming/c++/SlidingHyperLogLog$ make sql-load-extern-hll 
+docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/load_extern_hll_query.sql
+SET
+                                                                    QUERY PLAN                                                                    
+--------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=6588634.55..6588634.56 rows=1 width=8) (actual time=33124.471..33124.472 rows=1 loops=1)
+   Buffers: shared hit=33 read=1081087
+   ->  Seq Scan on user_logs  (cost=0.00..6581134.52 rows=1000003 width=4) (actual time=19708.621..30114.785 rows=62998155 loops=1)
+         Filter: (((viewed_at)::timestamp with time zone <= now()) AND ((viewed_at)::timestamp with time zone >= (now() - '365 days'::interval)))
+         Rows Removed by Filter: 137001845
+         Buffers: shared hit=33 read=1081087
+ Planning:
+   Buffers: shared hit=77
+ Planning Time: 1.381 ms
+ JIT:
+   Functions: 5
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.299 ms, Inlining 39.542 ms, Optimization 13.161 ms, Emission 11.723 ms, Total 64.725 ms
+ Execution Time: 33154.285 ms
+(14 rows)
+
+igorjob@Proggramer:~/programming/c++/SlidingHyperLogLog$ make sql-load-extern-hll 
+docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/load_extern_hll_query.sql
+SET
+                                                                    QUERY PLAN                                                                    
+--------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=6588634.55..6588634.56 rows=1 width=8) (actual time=33016.441..33016.442 rows=1 loops=1)
+   Buffers: shared hit=65 read=1081055
+   ->  Seq Scan on user_logs  (cost=0.00..6581134.52 rows=1000003 width=4) (actual time=19768.958..30050.736 rows=62998081 loops=1)
+         Filter: (((viewed_at)::timestamp with time zone <= now()) AND ((viewed_at)::timestamp with time zone >= (now() - '365 days'::interval)))
+         Rows Removed by Filter: 137001919
+         Buffers: shared hit=65 read=1081055
+ Planning:
+   Buffers: shared hit=77
+ Planning Time: 0.330 ms
+ JIT:
+   Functions: 5
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.296 ms, Inlining 42.077 ms, Optimization 13.280 ms, Emission 12.019 ms, Total 67.672 ms
+ Execution Time: 33043.544 ms
+(14 rows)
+
+igorjob@Proggramer:~/programming/c++/SlidingHyperLogLog$ make sql-load-extern-hll 
+docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/load_extern_hll_query.sql
+SET
+                                                                    QUERY PLAN                                                                    
+--------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=6588634.55..6588634.56 rows=1 width=8) (actual time=33495.794..33495.795 rows=1 loops=1)
+   Buffers: shared hit=97 read=1081023
+   ->  Seq Scan on user_logs  (cost=0.00..6581134.52 rows=1000003 width=4) (actual time=20046.098..30484.537 rows=62997988 loops=1)
+         Filter: (((viewed_at)::timestamp with time zone <= now()) AND ((viewed_at)::timestamp with time zone >= (now() - '365 days'::interval)))
+         Rows Removed by Filter: 137002012
+         Buffers: shared hit=97 read=1081023
+ Planning:
+   Buffers: shared hit=77
+ Planning Time: 0.531 ms
+ JIT:
+   Functions: 5
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.587 ms, Inlining 79.785 ms, Optimization 26.928 ms, Emission 23.247 ms, Total 130.547 ms
+ Execution Time: 33533.142 ms
+(14 rows)
+
+igorjob@Proggramer:~/programming/c++/SlidingHyperLogLog$ make sql-load-extern-hll 
+docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/load_extern_hll_query.sql
+SET
+                                                                    QUERY PLAN                                                                    
+--------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=6588634.55..6588634.56 rows=1 width=8) (actual time=32712.074..32712.075 rows=1 loops=1)
+   Buffers: shared hit=129 read=1080991
+   ->  Seq Scan on user_logs  (cost=0.00..6581134.52 rows=1000003 width=4) (actual time=19582.167..29761.802 rows=62997911 loops=1)
+         Filter: (((viewed_at)::timestamp with time zone <= now()) AND ((viewed_at)::timestamp with time zone >= (now() - '365 days'::interval)))
+         Rows Removed by Filter: 137002089
+         Buffers: shared hit=129 read=1080991
+ Planning:
+   Buffers: shared hit=77
+ Planning Time: 0.617 ms
+ JIT:
+   Functions: 5
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.295 ms, Inlining 38.893 ms, Optimization 13.303 ms, Emission 11.834 ms, Total 64.325 ms
+ Execution Time: 32738.728 ms
+(14 rows)
+
+igorjob@Proggramer:~/programming/c++/SlidingHyperLogLog$ make sql-load-extern-hll 
+docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/load_extern_hll_query.sql
+SET
+                                                                    QUERY PLAN                                                                    
+--------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=6588634.55..6588634.56 rows=1 width=8) (actual time=32952.173..32952.174 rows=1 loops=1)
+   Buffers: shared hit=161 read=1080959
+   ->  Seq Scan on user_logs  (cost=0.00..6581134.52 rows=1000003 width=4) (actual time=19528.544..29934.746 rows=62997835 loops=1)
+         Filter: (((viewed_at)::timestamp with time zone <= now()) AND ((viewed_at)::timestamp with time zone >= (now() - '365 days'::interval)))
+         Rows Removed by Filter: 137002165
+         Buffers: shared hit=161 read=1080959
+ Planning:
+   Buffers: shared hit=77
+ Planning Time: 0.314 ms
+ JIT:
+   Functions: 5
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.451 ms, Inlining 40.178 ms, Optimization 13.111 ms, Emission 11.736 ms, Total 65.476 ms
+ Execution Time: 32978.905 ms
+(14 rows)
+
+igorjob@Proggramer:~/programming/c++/SlidingHyperLogLog$ make sql-load-hll
+docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/load_HLL_query.sql
+SET
+                                                             QUERY PLAN                                                             
+------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=5081130.56..5081130.57 rows=1 width=8) (actual time=23223.288..23223.289 rows=1 loops=1)
+   Buffers: shared hit=193 read=1080927
+   ->  Seq Scan on user_logs  (cost=0.00..3081125.28 rows=200000528 width=12) (actual time=0.072..10069.379 rows=200000000 loops=1)
+         Buffers: shared hit=193 read=1080927
+ Planning:
+   Buffers: shared hit=80
+ Planning Time: 0.612 ms
+ JIT:
+   Functions: 3
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.325 ms, Inlining 77.598 ms, Optimization 15.965 ms, Emission 15.051 ms, Total 108.938 ms
+ Execution Time: 23259.697 ms
+(12 rows)
+
+igorjob@Proggramer:~/programming/c++/SlidingHyperLogLog$ make sql-load-hll
+docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/load_HLL_query.sql
+SET
+                                                            QUERY PLAN                                                             
+-----------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=5081130.56..5081130.57 rows=1 width=8) (actual time=22673.254..22673.255 rows=1 loops=1)
+   Buffers: shared hit=225 read=1080895
+   ->  Seq Scan on user_logs  (cost=0.00..3081125.28 rows=200000528 width=12) (actual time=0.082..9773.623 rows=200000000 loops=1)
+         Buffers: shared hit=225 read=1080895
+ Planning:
+   Buffers: shared hit=80
+ Planning Time: 0.295 ms
+ JIT:
+   Functions: 3
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.188 ms, Inlining 40.008 ms, Optimization 8.198 ms, Emission 8.035 ms, Total 56.429 ms
+ Execution Time: 22700.107 ms
+(12 rows)
+
+igorjob@Proggramer:~/programming/c++/SlidingHyperLogLog$ make sql-load-hll
+docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/load_HLL_query.sql
+SET
+                                                            QUERY PLAN                                                             
+-----------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=5081130.56..5081130.57 rows=1 width=8) (actual time=22550.786..22550.787 rows=1 loops=1)
+   Buffers: shared hit=257 read=1080863
+   ->  Seq Scan on user_logs  (cost=0.00..3081125.28 rows=200000528 width=12) (actual time=0.086..9728.805 rows=200000000 loops=1)
+         Buffers: shared hit=257 read=1080863
+ Planning:
+   Buffers: shared hit=80
+ Planning Time: 0.297 ms
+ JIT:
+   Functions: 3
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.190 ms, Inlining 39.802 ms, Optimization 8.036 ms, Emission 8.051 ms, Total 56.080 ms
+ Execution Time: 22577.137 ms
+(12 rows)
+
+igorjob@Proggramer:~/programming/c++/SlidingHyperLogLog$ make sql-load-hll
+docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/load_HLL_query.sql
+SET
+                                                            QUERY PLAN                                                             
+-----------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=5081130.56..5081130.57 rows=1 width=8) (actual time=22589.673..22589.674 rows=1 loops=1)
+   Buffers: shared hit=289 read=1080831
+   ->  Seq Scan on user_logs  (cost=0.00..3081125.28 rows=200000528 width=12) (actual time=0.076..9732.542 rows=200000000 loops=1)
+         Buffers: shared hit=289 read=1080831
+ Planning:
+   Buffers: shared hit=80
+ Planning Time: 0.282 ms
+ JIT:
+   Functions: 3
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.181 ms, Inlining 39.498 ms, Optimization 8.006 ms, Emission 7.924 ms, Total 55.610 ms
+ Execution Time: 22615.541 ms
+(12 rows)
+
+igorjob@Proggramer:~/programming/c++/SlidingHyperLogLog$ make sql-load-hll
+docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/load_HLL_query.sql
+SET
+                                                            QUERY PLAN                                                             
+-----------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=5081130.56..5081130.57 rows=1 width=8) (actual time=23132.998..23132.999 rows=1 loops=1)
+   Buffers: shared hit=321 read=1080799
+   ->  Seq Scan on user_logs  (cost=0.00..3081125.28 rows=200000528 width=12) (actual time=0.097..9984.816 rows=200000000 loops=1)
+         Buffers: shared hit=321 read=1080799
+ Planning:
+   Buffers: shared hit=80
+ Planning Time: 0.459 ms
+ JIT:
+   Functions: 3
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.357 ms, Inlining 78.250 ms, Optimization 15.921 ms, Emission 15.063 ms, Total 109.590 ms
+ Execution Time: 23167.769 ms
+(12 rows)
+
+igorjob@Proggramer:~/programming/c++/SlidingHyperLogLog$ make sql-load-hll
+docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/load_HLL_query.sql
+SET
+                                                            QUERY PLAN                                                             
+-----------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=5081130.56..5081130.57 rows=1 width=8) (actual time=22740.613..22740.614 rows=1 loops=1)
+   Buffers: shared hit=353 read=1080767
+   ->  Seq Scan on user_logs  (cost=0.00..3081125.28 rows=200000528 width=12) (actual time=0.079..9797.061 rows=200000000 loops=1)
+         Buffers: shared hit=353 read=1080767
+ Planning:
+   Buffers: shared hit=80
+ Planning Time: 0.287 ms
+ JIT:
+   Functions: 3
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.178 ms, Inlining 38.447 ms, Optimization 7.989 ms, Emission 7.901 ms, Total 54.515 ms
+ Execution Time: 22767.320 ms
+(12 rows)
+

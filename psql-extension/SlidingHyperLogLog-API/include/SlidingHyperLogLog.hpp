@@ -8,7 +8,6 @@
 
 struct NodeLFPM 
 {
-    std::chrono::system_clock::time_point timestamp;
     size_t value;
 };
 
@@ -68,6 +67,6 @@ void LFPM::add(std::chrono::system_clock::time_point timestamp, T val)
 
     if (current_power > lfpm[hashKey].value) 
     {
-        lfpm[hashKey] = NodeLFPM{ timestamp, current_power };
+        lfpm[hashKey] = NodeLFPM{ current_power };
     }
 }

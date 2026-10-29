@@ -10,7 +10,7 @@ LFPM::LFPM( const size_t mDegree_,
   alpha(mBuckets == 16 ? 0.673 : (mBuckets == 32 ? 0.697 : (mBuckets == 64 ? 0.709 : 0.7213 / (1.0 + 1.079 / mBuckets)))),
   startTimeWindow(startTimeWindow_),
   slidingWindow(slidingWindow_),
-  lfpm(1ULL << mDegree_, NodeLFPM{ std::chrono::system_clock::time_point{}, 0 })
+  lfpm(1ULL << mDegree_, NodeLFPM{ 0 })
 {}
 
 size_t LFPM::hashPower(uint64_t hash) const 

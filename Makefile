@@ -20,6 +20,7 @@ run:
 		-e POSTGRES_USER=$(DB_USER) \
 		-e POSTGRES_PASSWORD=$(DB_PASSWORD) \
 		-e POSTGRES_DB=$(DB_NAME) \
+		-v $(CURDIR)/tests/csv_generator:/tmp \
 		$(IMAGE_NAME)
 
 # Подключение к контейнеру
@@ -49,6 +50,22 @@ sql-hll-200:
 	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/HLL_query_200.sql
 sql-hll-100:
 	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/HLL_query_100.sql
+
+# Выполнить скрипт hll запроса (расширение)
+sql-extern-hll-100:
+	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/extern_hll_query_100.sql
+sql-extern-hll-200:
+	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/extern_hll_query_200.sql
+
+# Нагрузочное тестирование (запуск в разных терминалах)
+load-workers:
+	docker exec -it pg-test-container fill_workers.sh $(or $(NUM_QUERIES),4) $(or $(DURATION),120)
+
+sql-load-extern-hll:
+	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/load_extern_hll_query.sql
+
+sql-load-hll:
+	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/load_HLL_query.sql
 
 # Остановить контейнер
 stop:
