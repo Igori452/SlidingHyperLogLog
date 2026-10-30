@@ -1,5 +1,7 @@
 \timing on
 
+-- SET max_parallel_workers_per_gather = 0;
+
 -- Запросы для датасета в 500 млн за 5 лет
 
 -- 1 год

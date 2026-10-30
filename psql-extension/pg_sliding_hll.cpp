@@ -71,8 +71,6 @@ extern "C" Datum sliding_hll_accum(PG_FUNCTION_ARGS)
 
         MemoryContext oldcontext = MemoryContextSwitchTo(aggcontext);
         
-        // Инициализируем СТАТИЧНЫЙ LFPM жесткими границами.
-        // Теперь он знает, что всё, что не попадает в [start - window, start], нужно игнорировать.
         state = new (palloc(sizeof(LFPM))) LFPM(12, start_time_chrono, window_chrono);
         
         MemoryContextSwitchTo(oldcontext);
@@ -86,8 +84,6 @@ extern "C" Datum sliding_hll_accum(PG_FUNCTION_ARGS)
         int64       item = PG_GETARG_INT64(2);
         auto event_time = tstz_to_time_point(tstz);
         
-        // Метод add сравнивает event_time с [startTimeWindow - slidingWindow, startTimeWindow]
-        // Если попадает — ищет максимум для бакета. Если нет — просто делает return.
         state->add(event_time, static_cast<uint64_t>(item));
     }
 
@@ -101,9 +97,6 @@ extern "C" Datum sliding_hll_final(PG_FUNCTION_ARGS)
 
     LFPM *state = reinterpret_cast<LFPM *>(PG_GETARG_POINTER(0));
 
-    // Вызываем чистый метод cardinality() без аргументов времени.
-    // Нам не нужен refTime, потому что в бакетах СУПЕР-ГАРАНТИРОВАННО 
-    // лежат только валидные максимумы за нужный исторический отрезок.
     const auto [cardinality, err] = state->cardinality();
     
     PG_RETURN_INT64(static_cast<int64>(std::round(cardinality)));

@@ -1,5 +1,7 @@
 \timing on
 
+-- SET max_parallel_workers_per_gather = 0;
+
 -- Построение таблицы суточной агрегации
 DROP TABLE IF EXISTS daily_uniques;
 CREATE TABLE daily_uniques AS
@@ -10,6 +12,7 @@ GROUP BY 1;
 SELECT pg_size_pretty(pg_total_relation_size('daily_uniques')) AS daily_uniques_size;
 
 
+-- 180 дней — запрос к агрегации
 EXPLAIN (ANALYZE, BUFFERS, TIMING)
 SELECT hll_cardinality(hll_union_agg(users_hll))
 FROM daily_uniques
@@ -20,6 +23,7 @@ FROM daily_uniques
 WHERE day BETWEEN (NOW() - INTERVAL '180 days')::date AND NOW()::date;
 
 
+-- 365 дней — запрос к агрегации
 EXPLAIN (ANALYZE, BUFFERS, TIMING)
 SELECT hll_cardinality(hll_union_agg(users_hll))
 FROM daily_uniques
@@ -30,6 +34,7 @@ FROM daily_uniques
 WHERE day BETWEEN (NOW() - INTERVAL '365 days')::date AND NOW()::date;
 
 
+-- 730 дней — запрос к агрегации
 EXPLAIN (ANALYZE, BUFFERS, TIMING)
 SELECT hll_cardinality(hll_union_agg(users_hll))
 FROM daily_uniques
@@ -40,6 +45,7 @@ FROM daily_uniques
 WHERE day BETWEEN (NOW() - INTERVAL '730 days')::date AND NOW()::date;
 
 
+-- 730 дней, окончание 365 дней назад — запрос к агрегации
 EXPLAIN (ANALYZE, BUFFERS, TIMING)
 SELECT hll_cardinality(hll_union_agg(users_hll))
 FROM daily_uniques

@@ -1,0 +1,290 @@
+igorjob@Proggramer:~/programming/c++/SlidingHyperLogLog$ make sql-extern-hll-200
+docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/extern_hll_query_200.sql
+Timing is on.
+SET
+Time: 0.286 ms
+DROP TABLE
+Time: 12.301 ms
+SELECT 1096
+Time: 140855.061 ms (02:20.855)
+ daily_uniques_size 
+--------------------
+ 3056 kB
+(1 row)
+
+Time: 3.263 ms
+                                                   QUERY PLAN                                                    
+-----------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=44.94..44.95 rows=1 width=8) (actual time=1.899..1.900 rows=1 loops=1)
+   Buffers: shared hit=489
+   ->  Seq Scan on daily_uniques  (cost=0.00..44.93 rows=6 width=32) (actual time=0.022..0.248 rows=160 loops=1)
+         Filter: ((day <= (now())::date) AND (day >= ((now() - '180 days'::interval))::date))
+         Rows Removed by Filter: 936
+         Buffers: shared hit=8
+ Planning:
+   Buffers: shared hit=13
+ Planning Time: 0.214 ms
+ Execution Time: 1.995 ms
+(10 rows)
+
+Time: 5.279 ms
+  hll_cardinality   
+--------------------
+ 22687286.785348266
+(1 row)
+
+Time: 1.645 ms
+                                                   QUERY PLAN                                                    
+-----------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=44.94..44.95 rows=1 width=8) (actual time=2.996..2.997 rows=1 loops=1)
+   Buffers: shared hit=1043
+   ->  Seq Scan on daily_uniques  (cost=0.00..44.93 rows=6 width=32) (actual time=0.019..0.236 rows=345 loops=1)
+         Filter: ((day <= (now())::date) AND (day >= ((now() - '365 days'::interval))::date))
+         Rows Removed by Filter: 751
+         Buffers: shared hit=8
+ Planning:
+   Buffers: shared hit=4
+ Planning Time: 0.037 ms
+ Execution Time: 3.010 ms
+(10 rows)
+
+Time: 3.279 ms
+  hll_cardinality  
+-------------------
+ 38561042.00249006
+(1 row)
+
+Time: 3.064 ms
+                                                   QUERY PLAN                                                    
+-----------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=44.94..44.95 rows=1 width=8) (actual time=6.269..6.271 rows=1 loops=1)
+   Buffers: shared hit=2138
+   ->  Seq Scan on daily_uniques  (cost=0.00..44.93 rows=6 width=32) (actual time=0.012..0.280 rows=710 loops=1)
+         Filter: ((day <= (now())::date) AND (day >= ((now() - '730 days'::interval))::date))
+         Rows Removed by Filter: 386
+         Buffers: shared hit=8
+ Planning:
+   Buffers: shared hit=4
+ Planning Time: 0.042 ms
+ Execution Time: 6.290 ms
+(10 rows)
+
+Time: 6.661 ms
+  hll_cardinality  
+-------------------
+ 52918208.93534626
+(1 row)
+
+Time: 6.220 ms
+                                                                   QUERY PLAN                                                                   
+------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=51.29..51.30 rows=1 width=8) (actual time=6.872..6.873 rows=1 loops=1)
+   Buffers: shared hit=2201
+   ->  Seq Scan on daily_uniques  (cost=0.00..51.27 rows=6 width=32) (actual time=0.011..0.405 rows=731 loops=1)
+         Filter: ((day <= ((now() - '365 days'::interval))::date) AND (day >= (((now() - '365 days'::interval) - '730 days'::interval))::date))
+         Rows Removed by Filter: 365
+         Buffers: shared hit=8
+ Planning:
+   Buffers: shared hit=4
+ Planning Time: 0.120 ms
+ Execution Time: 6.900 ms
+(10 rows)
+
+Time: 7.516 ms
+  hll_cardinality  
+-------------------
+ 54054525.27836546
+(1 row)
+
+Time: 7.037 ms
+                                                                    QUERY PLAN                                                                    
+--------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=6588604.14..6588604.15 rows=1 width=8) (actual time=30351.748..30351.749 rows=1 loops=1)
+   Buffers: shared hit=33 read=1081087
+   ->  Seq Scan on user_logs  (cost=0.00..6581104.16 rows=999997 width=4) (actual time=24284.804..28978.810 rows=29010762 loops=1)
+         Filter: (((viewed_at)::timestamp with time zone <= now()) AND ((viewed_at)::timestamp with time zone >= (now() - '180 days'::interval)))
+         Rows Removed by Filter: 170989238
+         Buffers: shared hit=33 read=1081087
+ Planning:
+   Buffers: shared hit=4
+ Planning Time: 0.081 ms
+ JIT:
+   Functions: 5
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.443 ms, Inlining 5.322 ms, Optimization 14.115 ms, Emission 10.400 ms, Total 30.281 ms
+ Execution Time: 30352.564 ms
+(14 rows)
+
+Time: 30353.457 ms (00:30.353)
+  hll_cardinality  
+-------------------
+ 22620617.94794808
+(1 row)
+
+Time: 29120.283 ms (00:29.120)
+                                                                    QUERY PLAN                                                                    
+--------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=6588604.14..6588604.15 rows=1 width=8) (actual time=32500.653..32500.654 rows=1 loops=1)
+   Buffers: shared hit=97 read=1081023
+   ->  Seq Scan on user_logs  (cost=0.00..6581104.16 rows=999997 width=4) (actual time=19337.550..29509.474 rows=62800590 loops=1)
+         Filter: (((viewed_at)::timestamp with time zone <= now()) AND ((viewed_at)::timestamp with time zone >= (now() - '365 days'::interval)))
+         Rows Removed by Filter: 137199410
+         Buffers: shared hit=97 read=1081023
+ Planning:
+   Buffers: shared hit=4
+ Planning Time: 0.090 ms
+ JIT:
+   Functions: 5
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.330 ms, Inlining 3.781 ms, Optimization 12.992 ms, Emission 9.860 ms, Total 26.963 ms
+ Execution Time: 32501.276 ms
+(14 rows)
+
+Time: 32501.670 ms (00:32.502)
+  hll_cardinality   
+--------------------
+ 38531058.779271886
+(1 row)
+
+Time: 29905.109 ms (00:29.905)
+                                                                    QUERY PLAN                                                                    
+--------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=6588604.14..6588604.15 rows=1 width=8) (actual time=36515.088..36515.089 rows=1 loops=1)
+   Buffers: shared hit=161 read=1080959
+   ->  Seq Scan on user_logs  (cost=0.00..6581104.16 rows=999997 width=4) (actual time=9821.046..30426.174 rows=129467125 loops=1)
+         Filter: (((viewed_at)::timestamp with time zone <= now()) AND ((viewed_at)::timestamp with time zone >= (now() - '730 days'::interval)))
+         Rows Removed by Filter: 70532875
+         Buffers: shared hit=161 read=1080959
+ Planning:
+   Buffers: shared hit=4
+ Planning Time: 0.087 ms
+ JIT:
+   Functions: 5
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.309 ms, Inlining 3.935 ms, Optimization 12.829 ms, Emission 9.743 ms, Total 26.817 ms
+ Execution Time: 36515.697 ms
+(14 rows)
+
+Time: 36516.111 ms (00:36.516)
+  hll_cardinality  
+-------------------
+ 52918208.93534626
+(1 row)
+
+Time: 31429.173 ms (00:31.429)
+                                                                                             QUERY PLAN                                                                                             
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=7588601.26..7588601.27 rows=1 width=8) (actual time=51260.914..51260.915 rows=1 loops=1)
+   Buffers: shared hit=225 read=1080895
+   ->  Seq Scan on user_logs  (cost=0.00..7581101.28 rows=999997 width=4) (actual time=1005.215..44950.208 rows=133333333 loops=1)
+         Filter: (((viewed_at)::timestamp with time zone <= (now() - '365 days'::interval)) AND ((viewed_at)::timestamp with time zone >= ((now() - '365 days'::interval) - '730 days'::interval)))
+         Rows Removed by Filter: 66666667
+         Buffers: shared hit=225 read=1080895
+ Planning:
+   Buffers: shared hit=4
+ Planning Time: 0.102 ms
+ JIT:
+   Functions: 5
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.302 ms, Inlining 3.809 ms, Optimization 13.230 ms, Emission 10.173 ms, Total 27.514 ms
+ Execution Time: 51261.438 ms
+(14 rows)
+
+Time: 51261.843 ms (00:51.262)
+  hll_cardinality  
+-------------------
+ 54054525.27836546
+(1 row)
+
+Time: 46692.872 ms (00:46.693)
+igorjob@Proggramer:~/programming/c++/SlidingHyperLogLog$ make sql-hll-200
+docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/HLL_query_200.sql
+Timing is on.
+SET
+Time: 0.481 ms
+                                                             QUERY PLAN                                                             
+------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=5081108.48..5081108.49 rows=1 width=8) (actual time=23638.780..23638.781 rows=1 loops=1)
+   Buffers: shared hit=289 read=1080831
+   ->  Seq Scan on user_logs  (cost=0.00..3081114.24 rows=199999424 width=12) (actual time=0.077..10289.058 rows=200000000 loops=1)
+         Buffers: shared hit=289 read=1080831
+ Planning:
+   Buffers: shared hit=80
+ Planning Time: 0.562 ms
+ JIT:
+   Functions: 3
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.392 ms, Inlining 77.895 ms, Optimization 15.877 ms, Emission 14.916 ms, Total 109.080 ms
+ Execution Time: 23674.846 ms
+(12 rows)
+
+Time: 23676.750 ms (00:23.677)
+ unique_users_180d 
+-------------------
+          23166466
+(1 row)
+
+Time: 13300.921 ms (00:13.301)
+                                                            QUERY PLAN                                                             
+-----------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=5081108.48..5081108.49 rows=1 width=8) (actual time=23053.021..23053.022 rows=1 loops=1)
+   Buffers: shared hit=353 read=1080767
+   ->  Seq Scan on user_logs  (cost=0.00..3081114.24 rows=199999424 width=12) (actual time=0.038..9987.214 rows=200000000 loops=1)
+         Buffers: shared hit=353 read=1080767
+ Planning Time: 0.050 ms
+ JIT:
+   Functions: 3
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.206 ms, Inlining 2.568 ms, Optimization 7.565 ms, Emission 5.846 ms, Total 16.185 ms
+ Execution Time: 23053.578 ms
+(10 rows)
+
+Time: 23053.887 ms (00:23.054)
+ unique_users_365d 
+-------------------
+          39204119
+(1 row)
+
+Time: 13461.436 ms (00:13.461)
+                                                             QUERY PLAN                                                             
+------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=5081108.48..5081108.49 rows=1 width=8) (actual time=23283.793..23283.794 rows=1 loops=1)
+   Buffers: shared hit=417 read=1080703
+   ->  Seq Scan on user_logs  (cost=0.00..3081114.24 rows=199999424 width=12) (actual time=0.035..10030.920 rows=200000000 loops=1)
+         Buffers: shared hit=417 read=1080703
+ Planning Time: 0.061 ms
+ JIT:
+   Functions: 3
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.206 ms, Inlining 2.624 ms, Optimization 7.558 ms, Emission 5.814 ms, Total 16.201 ms
+ Execution Time: 23284.059 ms
+(10 rows)
+
+Time: 23284.467 ms (00:23.284)
+ unique_users_730d 
+-------------------
+          53445743
+(1 row)
+
+Time: 13682.927 ms (00:13.683)
+                                                            QUERY PLAN                                                             
+-----------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=5581107.04..5581107.05 rows=1 width=8) (actual time=34650.071..34650.072 rows=1 loops=1)
+   Buffers: shared hit=481 read=1080639
+   ->  Seq Scan on user_logs  (cost=0.00..3081114.24 rows=199999424 width=12) (actual time=0.037..9575.445 rows=200000000 loops=1)
+         Buffers: shared hit=481 read=1080639
+ Planning Time: 0.047 ms
+ JIT:
+   Functions: 3
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+   Timing: Generation 0.233 ms, Inlining 3.024 ms, Optimization 7.819 ms, Emission 5.839 ms, Total 16.915 ms
+ Execution Time: 34650.359 ms
+(10 rows)
+
+Time: 34650.864 ms (00:34.651)
+ unique_users_730d_ending_1y_ago 
+---------------------------------
+                        54086460
+(1 row)
+
+Time: 26472.301 ms (00:26.472)

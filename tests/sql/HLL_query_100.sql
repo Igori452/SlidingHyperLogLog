@@ -1,5 +1,7 @@
 \timing on
 
+-- SET max_parallel_workers_per_gather = 0;
+
 -- Запросы для датасета в 200 млн за 3 года
 
 -- 30 дней

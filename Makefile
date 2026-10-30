@@ -56,16 +56,24 @@ sql-extern-hll-100:
 	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/extern_hll_query_100.sql
 sql-extern-hll-200:
 	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/extern_hll_query_200.sql
+sql-extern-hll-500:
+	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/extern_hll_query_500.sql
 
 # Нагрузочное тестирование (запуск в разных терминалах)
 load-workers:
 	docker exec -it pg-test-container fill_workers.sh $(or $(NUM_QUERIES),4) $(or $(DURATION),120)
 
-sql-load-extern-hll:
+sql-load-extern-hll-200:
 	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/load_extern_hll_query.sql
 
-sql-load-hll:
+sql-load-hll-200:
 	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/load_HLL_query.sql
+
+sql-load-extern-hll-500:
+	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/load_extern_hll_query_500.sql
+
+sql-load-hll-500:
+	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/load_HLL_query_500.sql
 
 # Остановить контейнер
 stop:

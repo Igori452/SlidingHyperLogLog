@@ -1,5 +1,7 @@
 \timing on
 
+-- SET max_parallel_workers_per_gather = 0;
+
 -- Построение таблицы суточной агрегации
 DROP TABLE IF EXISTS daily_uniques;
 CREATE TABLE daily_uniques AS
@@ -7,11 +9,10 @@ SELECT viewed_at::date AS day,
        hll_add_agg(hll_hash_bigint(user_id::bigint), 12) AS users_hll
 FROM user_logs
 GROUP BY 1;
-
--- Проверка размера таблицы после построения
 SELECT pg_size_pretty(pg_total_relation_size('daily_uniques')) AS daily_uniques_size;
 
 
+-- 30 дней — запрос к агрегации
 EXPLAIN (ANALYZE, BUFFERS, TIMING)
 SELECT hll_cardinality(hll_union_agg(users_hll))
 FROM daily_uniques
@@ -22,6 +23,7 @@ FROM daily_uniques
 WHERE day BETWEEN (NOW() - INTERVAL '30 days')::date AND NOW()::date;
 
 
+-- 0.3 года — запрос к агрегации
 EXPLAIN (ANALYZE, BUFFERS, TIMING)
 SELECT hll_cardinality(hll_union_agg(users_hll))
 FROM daily_uniques
@@ -32,6 +34,7 @@ FROM daily_uniques
 WHERE day BETWEEN (NOW() - INTERVAL '90 days')::date AND NOW()::date;
 
 
+-- 0.7 года — запрос к агрегации
 EXPLAIN (ANALYZE, BUFFERS, TIMING)
 SELECT hll_cardinality(hll_union_agg(users_hll))
 FROM daily_uniques
@@ -42,6 +45,7 @@ FROM daily_uniques
 WHERE day BETWEEN (NOW() - INTERVAL '200 days')::date AND NOW()::date;
 
 
+-- последние пол года
 EXPLAIN (ANALYZE, BUFFERS, TIMING)
 SELECT hll_cardinality(hll_union_agg(users_hll))
 FROM daily_uniques
