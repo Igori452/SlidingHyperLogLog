@@ -6,6 +6,10 @@ CONTAINER_NAME=pg-test-container
 IMAGE_NAME=pg-test
 PORT=5432
 
+# Пути для генератора датасетов
+GEN_SCRIPT = tests/csv_generator/csv_generator.py
+GEN_DIR = tests/csv_generator
+
 .PHONY: build run connect sql-data stop clean restart rebuild
 
 # Сборка чистого образа без секретов
@@ -74,6 +78,16 @@ sql-load-extern-hll-500:
 
 sql-load-hll-500:
 	docker exec -i pg-test-container psql -U test_user -d test_db < tests/sql/load_HLL_query_500.sql
+
+# Генерация датасетов
+generate-100:
+	python3 $(GEN_SCRIPT) 100000000 100000 365 $(GEN_DIR)/data_100.csv
+
+generate-200:
+	python3 $(GEN_SCRIPT) 200000000 60000000 1095 $(GEN_DIR)/data_200.csv
+
+generate-500:
+	python3 $(GEN_SCRIPT) 500000000 450000000 1825 $(GEN_DIR)/data_500.csv
 
 # Остановить контейнер
 stop:
